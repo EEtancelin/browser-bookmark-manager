@@ -41,7 +41,7 @@ class ChromePlugin extends BrowserPlugin {
 
     // Traverse all roots keys
     for (let key in obj.roots) {
-      it = traverseTree(obj.roots[key])
+      it = traverseTree(obj.roots[key], [obj.roots[key].name])
 
       res = it.next()
       while (!res.done) {
@@ -68,13 +68,24 @@ class ChromePlugin extends BrowserPlugin {
   }
 }
 
-function * traverseTree (data) {
+function equalOrUndefined (arr1, arr2, idx) {
+  return ( !arr1[idx] || !arr2[idx] || arr1[idx] == arr2[idx])
+}
+const isPathAllowed  = path => {
+  const allowedPath = ["Barre de favoris", "Mailoop"]
+  return (equalOrUndefined(path, allowedPath, 0) && equalOrUndefined(path, allowedPath, 1)  )
+}
+
+function * traverseTree (data, path) {
+  const allowedPath = ["Barre de favoris", "Mailoop"]
   if (!data) {
     return
   }
-
+  if (!isPathAllowed(path)) {
+    return
+  }
   if (data.children) {
-    yield * traverseTree(data.children)
+    yield * traverseTree(data.children, path)
   }
 
   for (var i = 0; i < data.length; i++) {
@@ -82,7 +93,7 @@ function * traverseTree (data) {
     yield val
 
     if (val.children) {
-      yield * traverseTree(val.children)
+      yield * traverseTree(val.children, [...path, val.name])
     }
   }
 }
